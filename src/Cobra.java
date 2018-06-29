@@ -3,6 +3,7 @@ package src;
 import java.awt.Color;
 import java.awt.Graphics;
 
+
 /**
  *
  * @author Chamtty
@@ -21,6 +22,7 @@ public class Cobra extends Colisor {
     public boolean LEFT_BOOL = true;
     public boolean RIGHT_BOOL = true;
     private boolean morre = false;
+    private int cor = 255;
 
     public int getX() {
         return x;
@@ -66,6 +68,14 @@ public class Cobra extends Colisor {
         return "LastX: "+getLastX()+" LastY: "+getLastY();
     }
 
+    public int getCor() {
+        return cor;
+    }
+
+    public void setCor(int cor) {
+        this.cor = cor;
+    }
+    
     public Cobra(int x, int y) {
         this.x = x;
         this.y = y;
@@ -155,15 +165,19 @@ public class Cobra extends Colisor {
     }
 
     public void draw(Graphics g) {
-        g.setColor(Color.white);
+        g.setColor(new Color(cor,cor,cor));
         g.fillRect(x, y, size, size);
         g.setColor(Color.black);
     }
-    public void draw(Graphics g, String label) {
-        g.setColor(Color.white);
+    public void draw(Graphics g, int label) {
+        g.setColor(new Color(cor,cor,cor));
         g.fillRect(x, y, size, size);
         g.setColor(Color.black);
-        g.drawString(label, x+this.size/2, y+this.size/2);
+        if(label < 10){
+            g.drawString(String.valueOf(label), x+(this.size/2), y+(this.size/3)*2);
+        }else if(label >= 10){
+            g.drawString(String.valueOf(label), x+(this.size/2)/2, y+(this.size/3)*2);
+        }
     }
 
     @Override

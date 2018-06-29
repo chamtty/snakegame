@@ -24,24 +24,22 @@ public class JPanelMain extends JPanel implements Runnable {
     private Colisor colisor;
     private ArrayList<Cobra> cobra;
     private Comida comida;
-    private int tamanhoItens = 10;
     private int cobrasLenght = 5;
     private int grid;
-    private int maxVelDificult = 150;
-    private int minVelDificult = 70;
-    private int velDificult = 200;
+    private int maxVelDificult = 130;
+    private int minVelDificult = 90;
+    private int velDificult;
     private boolean morreu = false;
     private static boolean gameOver = false;
+    private int cor = 255;
 
     public JPanelMain(JFrame main) {
         frame = main;
-
         this.setSize(frame.getSize());
 
         setBackground(Color.black);
 
         inicia();
-
         if (animacao == null) {
             animacao = new Thread(this);
             animacao.start();
@@ -56,14 +54,11 @@ public class JPanelMain extends JPanel implements Runnable {
         while (true) {
 
             try {
-                //PAREI AKI
-
+                //DÁ O UPDATE NA PRIMEIRA COBRA
                 cobra.get(0).update();
 
-                for (int i = 0; i < cobra.size(); i++) {
-                    cobra.get(i).verificaUltimaPos();
-                }
-
+                //VERIFICA SE A CABEÇA DA COBRA COLIDIU
+                //COM OUTRA PARTE DO CORPO
                 for (int i = 0; i < cobra.size(); i++) {
                     try {
                         if (cobra.get(0).verificadorColisao(cobra.get(i + 1))) {
@@ -71,10 +66,17 @@ public class JPanelMain extends JPanel implements Runnable {
                             cobra.get(0).morrer();
                             gameOver = true;
                         }
-                    } catch (Exception e) {
-                    }
+                    } catch (Exception e) {}
 
                 }
+                
+                //VERIFICA A ULTIMA POSIÇÃO DAS COBRAS
+                for (int i = 0; i < cobra.size(); i++) {
+                    cobra.get(i).verificaUltimaPos();
+                }
+                
+                //MOVIMENTA O CORPO DA COBRA
+                //PARA A ULTIMA POSIÇÃO DETECTADA
                 for (int i = 0; i < cobra.size(); i++) {
                     if (!morreu) {
                         int lastX = cobra.get(i).getLastX();
@@ -83,17 +85,16 @@ public class JPanelMain extends JPanel implements Runnable {
                         cobra.get((index + 1)).setPos(lastX, lastY);
                     }
                 }
+            } catch (Exception e) {}
 
-            } catch (Exception e) {
-            }
-
+            //CHECA A COLISAO COM A COMIDA
             if (cobra.get(0).verificadorColisao(comida)) {
                 int lastX = cobra.get(cobra.size() - 1).getX();
                 int lastY = cobra.get(cobra.size() - 1).getY();
 
                 cobra.add(new Cobra(lastX, lastY));
                 comida.gerarComida(0, this.getWidth(), 0, this.getHeight(), this.cobra);
-                this.setBackground(Color.green);
+                this.setBackground(Color.white);
                 if (cobra.size() % 2 == 0) {
                     velDificult -= 10;
                     if (velDificult < minVelDificult) {
@@ -103,13 +104,20 @@ public class JPanelMain extends JPanel implements Runnable {
             } else {
                 this.setBackground(Color.black);
             }
+            //-----------------------
 
+            //ULTIMA VERIFICACAO
             verificaCobraSaiuTela();
+//            verificaGrid();
             repaint();
+            //-----------------------
+
+            //ADICIONA UM TEMPO PARA O PROXIMO QUADRO
             try {
                 Thread.sleep(velDificult);
             } catch (InterruptedException ex) {
             }
+            //-----------------------
 
         }
     }
@@ -118,9 +126,19 @@ public class JPanelMain extends JPanel implements Runnable {
     public void paintComponent(Graphics g
     ) {
         super.paintComponent(g);
-        int contador = cobra.size();
-        for (int i = 0; i < cobra.size(); i++) {
-            cobra.get(0).draw(g, String.valueOf(contador));
+
+        for (int i = 1; i < cobra.size(); i++) {
+
+            cobra.get(0).setCor(255);
+            cobra.get(0).draw(g, cobra.size());
+
+            if (cobra.get(i).getCor() == 255) {
+                cor -= 3;
+                if (cor < 50) {
+                    cor = 50;
+                }
+                cobra.get(i).setCor(cor);
+            }
             cobra.get(i).draw(g);
         }
         comida.draw(g);
@@ -128,6 +146,13 @@ public class JPanelMain extends JPanel implements Runnable {
         g.dispose();
     }
 
+    private void verificaGrid(){
+        if(colisor != null){
+            grid = (this.getHeight() * this.getHeight()) / 10000;
+            colisor.setSize(grid);
+        }
+    }
+    
     private void verificaCobraSaiuTela() {
         cobra.get(0).normalizaValores();
         if (cobra.get(0).getX() + cobra.get(0).getSize() >= this.getWidth() - cobra.get(0).getSize()) { //PAREDE DA DIREITA
@@ -167,16 +192,14 @@ public class JPanelMain extends JPanel implements Runnable {
     }
 
     private void inicia() {
-        grid = (this.getHeight() * this.getHeight()) / 10000;
         velDificult = maxVelDificult;
 
-        System.out.println("Tamanho: " + (this.getHeight() * this.getHeight()) / 10000);
         if (colisor == null) {
             colisor = new Colisor();
         }
 
-        colisor.setSize(grid);
-
+        verificaGrid();
+        
         if (cobra == null) {
             cobra = new ArrayList();
         }
@@ -185,6 +208,8 @@ public class JPanelMain extends JPanel implements Runnable {
         for (int i = cobrasLenght; i > 0; i--) {
             cobra.add(new Cobra(0, 0));
         }
+
+        cor = 255;
 
         if (comida == null) {
             comida = new Comida();
